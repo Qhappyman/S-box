@@ -10,8 +10,8 @@
       label-width="100px"
       class="demo-ruleForm"
     >
-      <el-form-item label="E-mail：" prop="pass">
-        <el-input type="password" v-model="ruleForm.pass" autocomplete="off" placeholder="E-mail"></el-input>
+      <el-form-item label="E-mail：" prop="checkMail">
+        <el-input type="text" v-model="ruleForm.checkMail" autocomplete="off" placeholder="E-mail"></el-input>
       </el-form-item>
       <el-form-item label="Password:" prop="checkPass">
         <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off" placeholder="Password"></el-input>
@@ -21,7 +21,7 @@
 <span class="forget">Forget password?</span>
 </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="submitForm('ruleForm')" class="login-button">登录</el-button>
+        <el-button type="primary" @click="Login" class="login-button">Login</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -31,56 +31,43 @@
 <script>
 export default {
   data () {
-    var checkAge = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('年龄不能为空'))
-      }
-      setTimeout(() => {
-        if (!Number.isInteger(value)) {
-          callback(new Error('请输入数字值'))
-        } else {
-          if (value < 18) {
-            callback(new Error('必须年满18岁'))
-          } else {
-            callback()
-          }
-        }
-      }, 1000)
-    }
-    var validatePass = (rule, value, callback) => {
+    var checkPass = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('请输入邮箱'))
+        callback(new Error('Please enter your password'))
       } else {
         if (this.ruleForm.checkPass !== '') {
-          this.$refs.ruleForm.validateField('checkPass')
+          const reg = /^[\w]{6,12}$/
+          if (!reg.test(value)) {
+            callback(new Error('Password error!'))
+          }
         }
         callback()
       }
     }
-    var validatePass2 = (rule, value, callback) => {
+    const checkMail = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('请再次输入密码'))
-      } else if (value !== this.ruleForm.pass) {
-        callback(new Error('两次输入密码不一致!'))
+        callback(new Error('Please enter your email'))
       } else {
+        if (this.ruleForm.checkMail !== '') {
+          const reg = /^\w+((.\w+)|(-\w+))@[A-Za-z0-9]+((.|-)[A-Za-z0-9]+).[A-Za-z0-9]+$/
+          if (!reg.test(value)) {
+            callback(new Error('Email format error!'))
+          }
+        }
         callback()
       }
     }
     return {
       ruleForm: {
-        pass: '',
-        checkPass: '',
-        age: ''
+        checkMail: '',
+        checkPass: ''
       },
       rules: {
-        pass: [
-          { validator: validatePass, trigger: 'blur' }
+        checkMail: [
+          { validator: checkMail, trigger: 'blur' }
         ],
         checkPass: [
-          { validator: validatePass2, trigger: 'blur' }
-        ],
-        age: [
-          { validator: checkAge, trigger: 'blur' }
+          { validator: checkPass, trigger: 'blur' }
         ]
       }
     }
@@ -88,6 +75,9 @@ export default {
   methods: {
     signUp () {
       this.$router.push({ path: 'register' })
+    },
+    Login () {
+      console.log(this.ruleForm)
     }
   }
 }

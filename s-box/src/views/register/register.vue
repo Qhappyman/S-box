@@ -7,44 +7,54 @@
       status-icon
       :rules="rules"
       ref="ruleForm"
-      label-width="100px"
+      label-width="60px"
       class="demo-ruleForm"
     >
-      <el-form-item prop="pass" :inline="true">
-        <el-form :inline="true" :model="formInline" class="demo-form-inline">
-  <el-form-item >
-    <el-input placeholder="FirstName"></el-input>
+      <el-form-item :inline="true">
+        <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules">
+    <el-form-item prop="FirstName" >
+    <el-input placeholder="FirstName" v-model="ruleForm.FirstName"></el-input>
   </el-form-item>
-  <el-form-item>
-    <el-input placeholder="LastName"></el-input>
-  </el-form-item>
-        </el-form>
-      </el-form-item>
-      <el-form-item prop="pass" :inline="true">
-        <el-form :inline="true" :model="formInline" class="demo-form-inline">
-  <el-form-item >
-    <el-input placeholder="Affilication"></el-input>
-  </el-form-item>
-  <el-form-item>
-    <el-input placeholder="Title"></el-input>
+  <el-form-item prop="LastName">
+    <el-input placeholder="LastName" v-model="ruleForm.LastName"></el-input>
   </el-form-item>
         </el-form>
       </el-form-item>
-      <el-form-item prop="age">
-        <el-input v-model.number="ruleForm.age" placeholder="E-mail"></el-input>
+      <el-form-item :inline="true">
+        <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules">
+  <el-form-item prop="Affilication">
+    <el-input placeholder="Affilication" v-model="ruleForm.Affilication"></el-input>
+  </el-form-item>
+  <el-form-item prop="Title">
+    <el-input placeholder="Title" v-model="ruleForm.Title"></el-input>
+  </el-form-item>
+        </el-form>
       </el-form-item>
-      <el-form-item prop="age">
-        <el-input v-model.number="ruleForm.age" placeholder="Verification"></el-input>
-      </el-form-item>
-
-      <el-form-item prop="age">
-        <el-input v-model.number="ruleForm.age" placeholder="Password"></el-input>
-      </el-form-item>
-      <el-form-item  prop="age">
-        <el-input v-model.number="ruleForm.age" placeholder="Confirm password"></el-input>
+      <el-form-item prop="checkMail">
+        <el-input type="text" v-model="ruleForm.checkMail" autocomplete="off" placeholder="E-mail"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="submitForm('ruleForm')" class="register-button">Sign up</el-button>
+        <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules">
+          <el-form-item prop="Verifiaction">
+    <el-input v-model="ruleForm.Verification" placeholder="Verifiaction" style="width:130px"></el-input>
+  </el-form-item>
+  <el-form-item>
+    <el-button type="primary" @click="sendVerifiaction">Send Verifiaction</el-button>
+  </el-form-item>
+  <el-form-item>
+    <el-button type="primary" @click="ensure">Confirm</el-button>
+  </el-form-item>
+        </el-form>
+      </el-form-item>
+
+      <el-form-item prop="pass">
+        <el-input v-model="ruleForm.pass" placeholder="Password" type="password"></el-input>
+      </el-form-item>
+      <el-form-item  prop="checkPass">
+        <el-input v-model="ruleForm.checkPass" placeholder="Confirm password" type="password"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="signUp" class="register-button">Sign up</el-button>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="Login" class="register-button">Has Count? Login</el-button>
@@ -57,37 +67,53 @@
 <script>
 export default {
   data () {
-    var checkAge = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('年龄不能为空'))
-      }
-      setTimeout(() => {
-        if (!Number.isInteger(value)) {
-          callback(new Error('请输入数字值'))
-        } else {
-          if (value < 18) {
-            callback(new Error('必须年满18岁'))
-          } else {
-            callback()
-          }
-        }
-      }, 1000)
-    }
-    var validatePass = (rule, value, callback) => {
+    const checkMail = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('请输入邮箱'))
+        callback(new Error('Please enter your email address'))
       } else {
-        if (this.ruleForm.checkPass !== '') {
-          this.$refs.ruleForm.validateField('checkPass')
+        if (this.ruleForm.checkMail !== '') {
+          const reg = /^\w+((.\w+)|(-\w+))@[A-Za-z0-9]+((.|-)[A-Za-z0-9]+).[A-Za-z0-9]+$/
+          if (!reg.test(value)) {
+            callback(new Error('Email format error!'))
+          }
         }
         callback()
       }
     }
-    var validatePass2 = (rule, value, callback) => {
+    const validatePass = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('请再次输入密码'))
+        callback(new Error('Please enter your password'))
+      } else {
+        if (this.ruleForm.checkPass !== '') {
+          const reg = /^[\w]{6,12}$/
+          if (!reg.test(value)) {
+            callback(new Error('The password consists of 6-12 Numbers, letters, and underscores'))
+          } else {
+            this.$refs.ruleForm.validateField('checkPass')
+          }
+        }
+        callback()
+      }
+    }
+    const validatePass2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('Please enter your password again'))
       } else if (value !== this.ruleForm.pass) {
-        callback(new Error('两次输入密码不一致!'))
+        callback(new Error('Password not match!'))
+      } else {
+        callback()
+      }
+    }
+    const isEmpty = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('Cannot be empty'))
+      } else {
+        callback()
+      }
+    }
+    const verificat = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('Enter your verification'))
       } else {
         callback()
       }
@@ -96,7 +122,12 @@ export default {
       ruleForm: {
         pass: '',
         checkPass: '',
-        age: ''
+        FirstName: '',
+        LastName: '',
+        Affilication: '',
+        Title: '',
+        Email: '',
+        Verifiaction: ''
       },
       rules: {
         pass: [
@@ -105,8 +136,23 @@ export default {
         checkPass: [
           { validator: validatePass2, trigger: 'blur' }
         ],
-        age: [
-          { validator: checkAge, trigger: 'blur' }
+        checkMail: [
+          { validator: checkMail, trigger: 'blur' }
+        ],
+        FirstName: [
+          { validator: isEmpty, trigger: 'blur' }
+        ],
+        LastName: [
+          { validator: isEmpty, trigger: 'blur' }
+        ],
+        Title: [
+          { validator: isEmpty, trigger: 'blur' }
+        ],
+        Affilication: [
+          { validator: isEmpty, trigger: 'blur' }
+        ],
+        Verifiaction: [
+          { validator: verificat, trigger: 'blur' }
         ]
       }
     }
@@ -114,6 +160,9 @@ export default {
   methods: {
     Login () {
       this.$router.push({ path: 'login' })
+    },
+    signUp () {
+      console.log(this.ruleForm)
     }
   }
 }
@@ -127,7 +176,7 @@ background-image: url('../../assets/login.jpg');
 overflow: hidden;
 }
 .register{
-width: 40%;
+width: 35%;
 height: 550px;
 margin: 40px auto;
 padding: 30px 60px 20px 0px;
