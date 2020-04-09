@@ -1,31 +1,41 @@
 <template>
-<div class="content">
-  <div class="login">
-<header>S-box Login</header>
-    <el-form
-      :model="ruleForm"
-      status-icon
-      :rules="rules"
-      ref="ruleForm"
-      label-width="100px"
-      class="demo-ruleForm"
-    >
-      <el-form-item label="E-mail：" prop="checkMail">
-        <el-input type="text" v-model="ruleForm.checkMail" autocomplete="off" placeholder="E-mail"></el-input>
-      </el-form-item>
-      <el-form-item label="Password:" prop="checkPass">
-        <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off" placeholder="Password"></el-input>
-      </el-form-item>
-<el-form-item>
-<span class="signup" @click="signUp">sign up</span>
-<span class="forget">Forget password?</span>
-</el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="Login" class="login-button">Login</el-button>
-      </el-form-item>
-    </el-form>
+  <div class="content">
+    <div class="login">
+      <header>S-box Login</header>
+      <el-form
+        :model="ruleForm"
+        status-icon
+        :rules="rules"
+        ref="ruleForm"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="E-mail：" prop="checkMail">
+          <el-input
+            type="text"
+            v-model="ruleForm.checkMail"
+            autocomplete="off"
+            placeholder="E-mail"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="Password:" prop="checkPass">
+          <el-input
+            type="password"
+            v-model="ruleForm.checkPass"
+            autocomplete="off"
+            placeholder="Password"
+          ></el-input>
+        </el-form-item>
+        <el-form-item>
+          <span class="signup" @click="signUp">sign up</span>
+          <span class="forget">Forget password?</span>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="Login(ruleForm)" class="login-button">Login</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -63,12 +73,8 @@ export default {
         checkPass: ''
       },
       rules: {
-        checkMail: [
-          { validator: checkMail, trigger: 'blur' }
-        ],
-        checkPass: [
-          { validator: checkPass, trigger: 'blur' }
-        ]
+        checkMail: [{ validator: checkMail, trigger: 'blur' }],
+        checkPass: [{ validator: checkPass, trigger: 'blur' }]
       }
     }
   },
@@ -76,49 +82,58 @@ export default {
     signUp () {
       this.$router.push({ path: 'register' })
     },
-    Login () {
-      console.log(this.ruleForm)
+    Login (e) {
+      this.$refs[e].validate((valid) => {
+        if (valid) {
+          alert('submit!')
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-@fontColor:#1890FF;
-.content{
-height: 700px;
-background-image: url('../../assets/login.jpg');
-overflow: hidden;
+@fontColor: #1890ff;
+.content {
+  height: 700px;
+  background-image: url("../../assets/login.jpg");
+  overflow: hidden;
 }
-.login{
-width: 25%;
-height: 350px;
-margin: 80px auto;
-padding: 30px 60px 20px 0px;
-background-color: white;
-border-radius: 10px;
-header{
-display: block;
-width: 50%;
-font-size: 30px;
-color: @fontColor;
-font-family: Arial, Helvetica, sans-serif;
-margin: 0 50% 30px 40%;
+.login {
+  width: 25%;
+  height: 350px;
+  margin: 80px auto;
+  padding: 30px 60px 20px 0px;
+  background-color: white;
+  border-radius: 10px;
+  header {
+    display: block;
+    width: 50%;
+    font-size: 30px;
+    color: @fontColor;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0 50% 30px 40%;
+  }
 }
+.signup,
+.forget {
+  color: @fontColor;
 }
-.signup,.forget{
-color: @fontColor;
+.signup,
+.forget:hover {
+  cursor: pointer;
 }
-.signup,.forget:hover{
-cursor: pointer;
+.signup {
+  float: left;
 }
-.signup{
-float: left;
+.forget {
+  float: right;
 }
-.forget{
-float: right;
-}
-.login-button{
-width: 100%;
+.login-button {
+  width: 100%;
 }
 </style>
