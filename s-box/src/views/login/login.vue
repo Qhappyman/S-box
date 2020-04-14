@@ -31,7 +31,7 @@
           <span class="forget">Forget password?</span>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="Login(ruleForm)" class="login-button">Login</el-button>
+          <el-button type="primary" @click="Login('ruleForm')" class="login-button">Login</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -39,9 +39,10 @@
 </template>
 
 <script>
+import { Debounce } from '../../components/debounce'
 export default {
   data () {
-    var checkPass = (rule, value, callback) => {
+    var checkPass = (rule, value, callback) => { // 验证信息的规则
       if (value === '') {
         callback(new Error('Please enter your password'))
       } else {
@@ -82,16 +83,20 @@ export default {
     signUp () {
       this.$router.push({ path: 'register' })
     },
-    Login (e) {
-      this.$refs[e].validate((valid) => {
+    Login: Debounce(function () { // 防抖函数来控制点击登录次数
+      this.$refs[arguments[0]].validate((valid) => {
         if (valid) {
-          alert('submit!')
+          this.$notify({
+            title: 'success',
+            message: 'Login successfully',
+            type: 'success'
+          })
         } else {
           console.log('error submit!!')
           return false
         }
       })
-    }
+    }, 1000)
   }
 }
 </script>

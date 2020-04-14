@@ -1,3 +1,4 @@
+/* eslint-disable no-tabs */
 <template>
   <div class="content">
     <div class="register">
@@ -15,7 +16,7 @@
             <el-form-item prop="FirstName">
               <el-input placeholder="FirstName" v-model="ruleForm.FirstName"></el-input>
             </el-form-item>
-            <el-form-item prop="LastName">
+            <el-form-item prop="LastName" style="float:right">
               <el-input placeholder="LastName" v-model="ruleForm.LastName"></el-input>
             </el-form-item>
           </el-form>
@@ -25,7 +26,7 @@
             <el-form-item prop="Affilication">
               <el-input placeholder="Affilication" v-model="ruleForm.Affilication"></el-input>
             </el-form-item>
-            <el-form-item prop="Title">
+            <el-form-item prop="Title" style="float:right">
               <el-input placeholder="Title" v-model="ruleForm.Title"></el-input>
             </el-form-item>
           </el-form>
@@ -39,7 +40,7 @@
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules">
+          <!-- <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules">
             <el-form-item prop="Verifiaction">
               <el-input
                 v-model="ruleForm.Verifiaction"
@@ -53,7 +54,7 @@
             <el-form-item :style="handleStyle" ref="confirm">
               <el-button type="primary" @click="enSure">Confirm</el-button>
             </el-form-item>
-          </el-form>
+          </el-form> -->
         </el-form-item>
 
         <el-form-item prop="pass">
@@ -75,9 +76,10 @@
 
 <script>
 import axios from 'axios'
+import { Debounce } from '../../components/debounce'
 export default {
   data () {
-    const checkMail = (rule, value, callback) => {
+    const checkMail = (rule, value, callback) => { // email格式
       if (value === '') {
         callback(new Error('Please enter your email address'))
       } else {
@@ -90,7 +92,7 @@ export default {
         callback()
       }
     }
-    const validatePass = (rule, value, callback) => {
+    const validatePass = (rule, value, callback) => { // 密码格式，6-12位字母，数字，下划线
       if (value === '') {
         callback(new Error('Please enter your password'))
       } else {
@@ -109,7 +111,7 @@ export default {
         callback()
       }
     }
-    const validatePass2 = (rule, value, callback) => {
+    const validatePass2 = (rule, value, callback) => { // 第二次密码是否和第一次一致
       if (value === '') {
         callback(new Error('Please enter your password again'))
       } else if (value !== this.ruleForm.pass) {
@@ -125,7 +127,7 @@ export default {
         callback()
       }
     }
-    const verificat = (rule, value, callback) => {
+    const verificat = (rule, value, callback) => { // 判断验证码是否为空且正确
       if (value === '') {
         callback(new Error('Enter your verification'))
       } else {
@@ -141,8 +143,7 @@ export default {
         Affilication: '',
         Title: '',
         Email: '',
-        Verifiaction: '',
-        SEND: true
+        Verifiaction: ''
       },
       rules: {
         pass: [{ validator: validatePass, trigger: 'blur' }],
@@ -157,60 +158,79 @@ export default {
     }
   },
   computed: {
-    handleStyle () {
-      if (this.ruleForm.SEND === true) {
-        return { display: 'inline-block' }
-      } else {
-        return { display: 'none' }
-      }
-    }
+    // handleStyle () { // 通过是否已发送验证码来控制样式,发送后使confirm按钮展示为inline-block
+    //   if (this.ruleForm.SEND === true) {
+    //     return { display: 'inline-block' }
+    //   } else {
+    //     return { display: 'none' }
+    //   }
+    // }
   },
   methods: {
     Login () {
       this.$router.push({ path: 'login' })
     },
-    signUp (rule) {
-      const rules = rule.split(' ')
+    signUp: Debounce(function () { // 防抖函数控制注册次数
+      const rules = arguments[0].split(' ')
       console.log(rules)
       const canSign = (e) => {
+        let p
         this.$refs[e].validate((valid) => {
           if (valid) {
-            alert('submit!')
+            p = true
+            return true
           } else {
-            console.log('error submit!!')
+            p = false
             return false
           }
         })
+        return p // 每个验证返回的布尔值
       }
-      canSign(rules[0])
-    },
-    sendVerifiaction () {
-      // eslint-disable-next-line no-template-curly-in-string
-      axios.get(`/api/sms?appid=73736941&appsecret=ajRQHZ6g&code=1122&mobile=${this.ruleForm.FirstName}`)
-        .then((res) => {
-          console.log(res)
-          const message = res.data
-          if (message.errmsg === 'SUCCESS') {
-            this.$message({
-              message: 'send successfully',
-              type: 'success'
-            })
-            this.ruleForm.SEND = true
-          } else {
-            this.$message.error('send failly')
-          }
-        })
-    },
-    enSure () {
-      if (this.ruleForm.Verifiaction === '1122') {
-        this.$message({
-          message: 'Verifiaction right',
+      const one = canSign(rules[0])
+      const two = canSign(rules[1])
+      const three = canSign(rules[2])
+      console.log(one, two, three) // 若所有验证通过进行注册成功的请求发送
+      if (one && two && three) {
+        this.$notify({
+          title: 'success',
+          message: 'Register successfully',
           type: 'success'
         })
-      } else {
-        this.$message.error('Verifiaction error')
+        setTimeout(() => { // 激活账号提示
+          this.$alert('we will send a message to your email, please confirm it', '', {
+            confirmButtonText: 'confirm',
+            callback: app => {
+              const loading = this.$loading({
+                lock: true,
+                text: 'confirm your email message',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+              })
+              setTimeout(() => { // 等待用户确认激活信息后关闭loding，进入主界面
+                this.$router.push({path: 'activation'})
+                loading.close()
+              }, 1000)
+            }
+          })
+        }, 2000)
       }
-    }
+    }, 1500)
+    // sendVerifiaction () { // 发送验证码
+    //   // eslint-disable-next-line no-template-curly-in-string
+    //   axios.get(`/api/sms?appid=73736941&appsecret=ajRQHZ6g&code=1122&mobile=${this.ruleForm.FirstName}`)
+    //     .then((res) => {
+    //       console.log(res)
+    //       const message = res.data
+    //       if (message.errmsg === 'SUCCESS') {
+    //         this.$message({
+    //           message: 'send successfully',
+    //           type: 'success'
+    //         })
+    //       } else {
+    //         this.$message.error('send failly')
+    //       }
+    //     })
+    // }
   }
 }
 </script>
