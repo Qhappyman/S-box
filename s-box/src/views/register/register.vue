@@ -13,20 +13,20 @@
       >
         <el-form-item :inline="true">
           <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules" ref="ruleForm1">
-            <el-form-item prop="FirstName">
+            <el-form-item prop="FirstName" class="firstname">
               <el-input placeholder="FirstName" v-model="ruleForm.FirstName"></el-input>
             </el-form-item>
-            <el-form-item prop="LastName" style="float:right">
+            <el-form-item prop="LastName" class="lastname">
               <el-input placeholder="LastName" v-model="ruleForm.LastName"></el-input>
             </el-form-item>
           </el-form>
         </el-form-item>
         <el-form-item :inline="true">
           <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules" ref="ruleForm2">
-            <el-form-item prop="Affilication">
+            <el-form-item prop="Affilication" class="affilication">
               <el-input placeholder="Affilication" v-model="ruleForm.Affilication"></el-input>
             </el-form-item>
-            <el-form-item prop="Title" style="float:right">
+            <el-form-item prop="Title" class="title">
               <el-input placeholder="Title" v-model="ruleForm.Title"></el-input>
             </el-form-item>
           </el-form>
@@ -39,29 +39,23 @@
             placeholder="E-mail"
           ></el-input>
         </el-form-item>
-        <el-form-item>
-          <!-- <el-form :inline="true" :model="ruleForm" class="demo-form-inline" :rules="rules">
-            <el-form-item prop="Verifiaction">
-              <el-input
-                v-model="ruleForm.Verifiaction"
-                placeholder="Verifiaction"
-                style="width:130px"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="sendVerifiaction">Send Verifiaction</el-button>
-            </el-form-item>
-            <el-form-item :style="handleStyle" ref="confirm">
-              <el-button type="primary" @click="enSure">Confirm</el-button>
-            </el-form-item>
-          </el-form> -->
-        </el-form-item>
-
         <el-form-item prop="pass">
           <el-input v-model="ruleForm.pass" placeholder="Password" type="password"></el-input>
         </el-form-item>
         <el-form-item prop="checkPass">
           <el-input v-model="ruleForm.checkPass" placeholder="Confirm password" type="password"></el-input>
+        </el-form-item>
+        <el-form-item class="slide">
+          <slide-verify 
+    ref="slideblock"
+    @again="onAgain"
+    @fulfilled="onFulfilled"
+    @success="onSuccess"
+    @fail="onFail"
+    @refresh="onRefresh"
+    :accuracy="accuracy"
+    :slider-text="text"
+></slide-verify>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="signUp(`ruleForm ruleForm1 ruleForm2`)" class="register-button">Sign up</el-button>
@@ -81,12 +75,12 @@ export default {
   data () {
     const checkMail = (rule, value, callback) => { // email格式
       if (value === '') {
-        callback(new Error('Please enter your email address'))
+        callback(new Error('The mailbox will be your account'))
       } else {
         if (this.ruleForm.checkMail !== '') {
           const reg = /^\w+((.\w+)|(-\w+))@[A-Za-z0-9]+((.|-)[A-Za-z0-9]+).[A-Za-z0-9]+$/
           if (!reg.test(value)) {
-            callback(new Error('Email format error!'))
+            callback(new Error('Email format error, it will be your account'))
           }
         }
         callback()
@@ -135,6 +129,10 @@ export default {
       }
     }
     return {
+      msg: '',
+      text: 'slide to right',
+      accuracy: 2,
+      slide: false,
       ruleForm: {
         pass: '',
         checkPass: '',
@@ -142,8 +140,7 @@ export default {
         LastName: '',
         Affilication: '',
         Title: '',
-        Email: '',
-        Verifiaction: ''
+        checkMail: ''
       },
       rules: {
         pass: [{ validator: validatePass, trigger: 'blur' }],
@@ -158,13 +155,6 @@ export default {
     }
   },
   computed: {
-    // handleStyle () { // 通过是否已发送验证码来控制样式,发送后使confirm按钮展示为inline-block
-    //   if (this.ruleForm.SEND === true) {
-    //     return { display: 'inline-block' }
-    //   } else {
-    //     return { display: 'none' }
-    //   }
-    // }
   },
   methods: {
     Login () {
@@ -172,7 +162,6 @@ export default {
     },
     signUp: Debounce(function () { // 防抖函数控制注册次数
       const rules = arguments[0].split(' ')
-      console.log(rules)
       const canSign = (e) => {
         let p
         this.$refs[e].validate((valid) => {
@@ -190,8 +179,11 @@ export default {
       const two = canSign(rules[1])
       const three = canSign(rules[2])
       console.log(one, two, three) // 若所有验证通过进行注册成功的请求发送
-      if (one && two && three) {
-        this.$notify({
+      if (one && two && three && this.slide === true) {
+        axios.post(`http://111.230.197.120:8080/register?firstName=${this.ruleForm.FirstName}&lastName=${this.ruleForm.LastName}&affiliation=${this.ruleForm.Affilication}&email=${this.ruleForm.checkMail}&password=${this.ruleForm.pass}&title=${this.ruleForm.Title}`)
+        .then((e) => {
+          console.log(e);
+          this.$notify({
           title: 'success',
           message: 'Register successfully',
           type: 'success'
@@ -213,38 +205,48 @@ export default {
             }
           })
         }, 2000)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+      } else {
+        if(this.slide === false) {   // 单独判断是否滑动验证成功
+          this.$message.error('confirm your slide');
+        }
       }
-    }, 1500)
-    // sendVerifiaction () { // 发送验证码
-    //   // eslint-disable-next-line no-template-curly-in-string
-    //   axios.get(`/api/sms?appid=73736941&appsecret=ajRQHZ6g&code=1122&mobile=${this.ruleForm.FirstName}`)
-    //     .then((res) => {
-    //       console.log(res)
-    //       const message = res.data
-    //       if (message.errmsg === 'SUCCESS') {
-    //         this.$message({
-    //           message: 'send successfully',
-    //           type: 'success'
-    //         })
-    //       } else {
-    //         this.$message.error('send failly')
-    //       }
-    //     })
-    // }
+    }, 1500),
+    onSuccess(){        //验证码的判断
+            this.msg = 'success';
+            this.slide = true;
+        },
+        onFail(){
+            this.slide = false;
+        },
+        onRefresh(){
+        },
+        onFulfilled() {
+        },
+        onAgain() {
+            console.log('检测到非人为操作的哦！');
+            this.msg = 'try again';
+            // 刷新
+            this.$refs.slideblock.reset();
+        }
   }
+  
 }
 </script>
 
 <style lang="less" scoped>
 @fontColor: #1890ff;
 .content {
-  height: 700px;
+  height: 900px;
   background-image: url("../../assets/login.jpg");
   overflow: hidden;
 }
 .register {
   width: 35%;
-  height: 550px;
+  height: 750px;
   margin: 40px auto;
   padding: 30px 60px 20px 0px;
   background-color: white;
@@ -258,7 +260,64 @@ export default {
     margin: 0 50% 30px 40%;
   }
 }
+.lastname{
+  float: right;
+}
+.title{
+  float: right;
+}
 .register-button {
   width: 100%;
+}
+@media screen and (max-width: 1415px) and (min-width: 880px){
+  .lastname,.title,.firstname,.affilication{
+    width: 43%;
+  }
+  .register{
+    height: 800px;
+  }
+}
+@media screen and (max-width: 890px) and(min-width: 560px) {
+  .lastname{
+    float: left;
+    margin-top: 5px;
+  }
+  .title{
+    float: left;
+    margin-top: -5px;
+  }
+  .affilication{
+    margin-top: -15px;
+  }
+  .register{
+    height: 600px;
+    width: 60%;
+  }
+  .content{
+    height: 750px;
+  }
+   .slide{ 
+    display: none;
+  }
+}
+@media screen and (max-width: 560px){
+  .register{
+    height: 600px;
+    width:70%;
+  }
+   .slide{ 
+    display: none;
+  }
+  .lastname{
+    float: left;
+    margin-top: 5px;
+  }
+  .title{
+    float: left;
+    margin-top: -5px;
+  }
+  .affilication{
+    margin-top: -15px;
+  }
 }
 </style>

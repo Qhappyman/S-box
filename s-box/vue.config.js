@@ -65,7 +65,7 @@ module.exports = {
 
     https: false,
 
-    proxy: 'https://tianqiapi.com'
+    proxy: 'http://111.230.197.120:8080'
   }
   // proxyTable: {
   //   '/api':

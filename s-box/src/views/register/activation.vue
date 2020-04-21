@@ -11,10 +11,11 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
     data() {
       return {
-          time: 5,
+          time: 60,
           sure: false
       }
     },
@@ -40,13 +41,26 @@ export default {
     },
     methods: {
         confirm () {
-            this.$alert('activation successfully', '', {
+            axios.get(`/sbox/activation/{code}`)
+            .then((res) => {
+                console.log(res)
+                this.$alert('activation successfully', '', {
                     confirmButtonText: 'confirm',
                     callback: ()=> {
                         this.$router.push({path: 'login'})
                         this.sure = true;
                     }
-                })           
+                }) 
+            })
+            .catch((err) => {
+                console.log(err)
+                this.$alert('activate fail, please confirm your message', 'Error', {
+                    confirmButtonText: 'confirm',
+                    callback: ()=> {
+                        history.go(-1)
+                    }
+                })
+            })          
         }
     }
 };

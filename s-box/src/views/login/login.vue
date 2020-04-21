@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import { Debounce } from '../../components/debounce'
 export default {
   data () {
@@ -86,10 +87,16 @@ export default {
     Login: Debounce(function () { // 防抖函数来控制点击登录次数
       this.$refs[arguments[0]].validate((valid) => {
         if (valid) {
-          this.$notify({
+          axios.post(`http://111.230.197.120:8080/login?email=${this.ruleForm.checkMail}&password=${this.ruleForm.checkPass}`)
+          .then(()=>{
+            this.$notify({
             title: 'success',
             message: 'Login successfully',
             type: 'success'
+          })
+          })
+          .catch((err) => {
+            console.log(err);
           })
         } else {
           console.log('error submit!!')
@@ -140,5 +147,31 @@ export default {
 }
 .login-button {
   width: 100%;
+}
+@media screen and (max-width: 1050px) and (min-width: 750px){
+  .forget{
+    // float: left;
+  }
+  .login{
+    width: 43%
+  }
+}
+@media screen and (max-width: 750px) and (min-width: 560px) {
+  .login{
+    height: 350px;
+    width: 60%
+  }
+  .forget{
+    // float: left;
+  }
+}
+@media screen and (max-width: 560px){
+  .login{
+    height: 400px;
+    width: 60%;
+  }
+  .forget{
+    // float: left;
+  }
 }
 </style>

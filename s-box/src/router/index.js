@@ -22,6 +22,11 @@ const routes = [
     path: '/activation',
     name: 'Activation',
     component: () => import('../views/register/activation.vue')
+  },
+  {
+    path: '/slide',
+    name: 'Slide',
+    component: ()=> import('../components/slide/slidev.vue')
   }
 ]
 
