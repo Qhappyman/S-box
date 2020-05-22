@@ -9,6 +9,11 @@ const routes = [
     component: () => import('../views/login/login.vue')
   },
   {
+    path: '/',
+    name: 'Index',
+    component: () => import('../views/index.vue')
+  },
+  {
     path: '/register',
     name: 'Register',
     component: () => import('../views/register/register.vue')
@@ -24,9 +29,24 @@ const routes = [
     component: () => import('../views/register/activation.vue')
   },
   {
+    path: '/fail',
+    name: 'Fail',
+    component: () => import('../views/register/fail.vue')
+  },
+  {
     path: '/slide',
     name: 'Slide',
     component: ()=> import('../components/slide/slidev.vue')
+  },
+  {
+    path: '/user',
+    name: 'User',
+    component :() => import('../views/user/user.vue')
+  },
+  {
+    path: '/modifyPass',
+    name: 'ModifyPass',
+    component :() => import('../views/user/modifyPass.vue')
   }
 ]
 

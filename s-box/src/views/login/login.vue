@@ -40,6 +40,7 @@
 
 <script>
 import axios from 'axios'
+import {mapState} from 'vuex';
 import { Debounce } from '../../components/debounce'
 export default {
   data () {
@@ -87,13 +88,34 @@ export default {
     Login: Debounce(function () { // 防抖函数来控制点击登录次数
       this.$refs[arguments[0]].validate((valid) => {
         if (valid) {
-          axios.post(`http://111.230.197.120:8080/login?email=${this.ruleForm.checkMail}&password=${this.ruleForm.checkPass}`)
-          .then(()=>{
+          axios.get(`http://111.230.197.120:8080/login?email=${this.ruleForm.checkMail}&password=${this.ruleForm.checkPass}`)
+          .then((res)=>{
+            console.log(res)
+            if(res.data.retCode==0){
             this.$notify({
             title: 'success',
             message: 'Login successfully',
             type: 'success'
           })
+          const _this = this;
+          const userInf = res.data.data;
+          _this.$store.commit('update',{
+        firstname: userInf.firstName,
+        lastname: userInf.lastName,
+        affilication: userInf.affiliation,
+        title: userInf.title,
+        email: userInf.email
+      });
+          setTimeout(()=>{
+            _this.$router.push({path:'home'})
+          },2000)
+            }
+            else{
+              this.$notify.error({
+          title: 'error',
+          message: 'Account not exist'
+        });
+            }
           })
           .catch((err) => {
             console.log(err);

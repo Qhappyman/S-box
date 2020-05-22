@@ -2,10 +2,8 @@
     <div class="contain">
         <header>S-box, Welcome to use</header>
         <div class="jump">
-            <div class="title">Activation successfully</div>
+            <div class="title">Activate failly</div>
             <div class="choose">
-                <el-button type="primary" class="button" @click="login">Jump to login</el-button>
-                <br>
                 <el-button type="primary" class="button" @click="previous">Return to the previous page</el-button>
             </div>
         </div>
@@ -15,9 +13,6 @@
 <script>
 export default {
     methods: {
-        login(){
-            this.$router.push({path:'login'})
-        },
         previous() {
             window.history.back();
         }
@@ -40,7 +35,7 @@ export default {
     .jump{
         box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
         width: 30%;
-        height: 350px;
+        height: 250px;
         margin: auto;
         margin-top: 70px;
         .title{
