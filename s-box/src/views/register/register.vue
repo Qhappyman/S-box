@@ -209,7 +209,7 @@ export default {
                 spinner: 'el-icon-loading',
                 background: 'rgba(0, 0, 0, 0.7)'
               })
-              setTimeout(()=>loading.close(),5000)
+              setTimeout(()=>loading.close(),500)    //去掉
               // setTimeout(() => { // 等待用户确认激活信息后关闭loding，进入主界面
               //   this.$router.push({path: 'activation'})
               //   loading.close()
@@ -219,12 +219,14 @@ export default {
         }, 2000)
         })
         .catch((err) => {
-          console.log(err)
-          alert(res)
+          this.$notify.info({
+          title: 'fail',
+          message: 'network error'
+        });
         })
       } else {
         if(this.slide === false) {   // 单独判断是否滑动验证成功
-          this.$message.error('confirm your slide');
+          this.$message('confirm your slide');
         }
       }
     }, 1500),

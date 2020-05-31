@@ -111,9 +111,10 @@ export default {
           },2000)
             }
             else{
-              this.$notify.error({
-          title: 'error',
-          message: 'Account not exist'
+              this.$notify({
+          title: '',
+          message: 'Account not exit',
+          type: 'warning'
         });
             }
           })

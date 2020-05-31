@@ -20,15 +20,8 @@
       <div class="title">S-box test</div>
       <el-divider></el-divider>
     <div class="bottom">
-      <div class="upfile">
-        <a href="javascript:;" class="file">
-          select file
-          <input type="file" name @change="handleChange()" ref="file" />
-        </a>
-        <span>{{upfile}}</span>
-      </div>
-      <div class="selectn">
-        select in:
+      <div class="select-in">
+        Input bytes:
         <el-select v-model="value" placeholder="select" @change="selectChange">
           <el-option
             v-for="item in options"
@@ -38,8 +31,8 @@
           ></el-option>
         </el-select>
       </div>
-      <div class="selectn">
-        select out:
+      <div class="select-out">
+        Output bytes:
         <el-select v-model="value2" placeholder="select" @change="selectChange2">
           <el-option
             v-for="item in options"
@@ -49,8 +42,12 @@
           ></el-option>
         </el-select>
       </div>
-      <div class="confirm">
-        <el-button type="success" :plain="true" @click="openCenter">confirm format</el-button>
+      <div class="upfile">
+        <a href="javascript:;" class="file">
+          select file
+          <input type="file" name @change="handleChange()" ref="file" />
+        </a>
+        <span>{{upfile}}</span>
       </div>
     </div>
     <div class="table">
@@ -72,9 +69,6 @@
         <el-table-column prop="13" label="13" width="60" class="thirdtable"></el-table-column>
         <el-table-column prop="14" label="14" width="60" class="thirdtable"></el-table-column>
         <el-table-column prop="15" label="15" width="60" class="thirdtable"></el-table-column>
-        <el-table-column prop="16" label="16" width="60" class="thirdtable"></el-table-column>
-        <el-table-column prop="17" label="17" width="60" class="thirdtable"></el-table-column>
-        <el-table-column prop="18" label="18" width="60" class="thirdtable"></el-table-column>
       </el-table>
     </div>
     <div class="calcute">
@@ -145,12 +139,6 @@ export default {
           1: "0",
           2: "0",
           3: "0"
-        },
-        {
-          0: "0",
-          1: "0",
-          2: "0",
-          3: "0"
         }
       ],
       tableData2: [
@@ -204,14 +192,13 @@ export default {
       form: {
         type: []
       },
-      value: 4, // 矩阵行列
-      value2:4,
+      value: 8, // 矩阵行列
+      value2:8,
       file: "",
       upfile: "",
       activeIndex2: '1',
       data:'',
-      email:'',
-      confirm:false   //是否确认m n
+      email:''
     };
   },
   mounted() {
@@ -236,6 +223,10 @@ export default {
   computed:{
     ...mapGetters(['getbaseInf'])
   },
+  mounted(){
+    this.createTable("8");   //必须是字符串
+    this.createTable2("8");
+  },
   created(){
     this.email = this.$store.getters.getbaseInf.email;
   },
@@ -243,18 +234,10 @@ export default {
     indexMethod(index) {
       return index; // 列索引
     },
-    openCenter() {
-      this.confirm = true;
-        this.$message({
-          message: `you has select m:${this.value} n:${this.value2}`,
-          center: true,
-          type: 'success'
-        });
-    },
     handleSelect(key, keyPath) {
         console.log(key, keyPath);
     },
-    handleChange() {
+    handleChange() {           //16 16
       this.confirm === false;
       const file = this.$refs.file; // 当文件上传时读取文件
       let formdata = new FormData();
@@ -265,63 +248,77 @@ export default {
         this.upfile = "upFile error!";
       };
       reader.onload = () => {
-        const arr = reader.result.split(" ");
+        const arr = reader.result.split(" ");  //分割成为字符串数组
+        const RESULT = this.checkInput(this.value,arr);
+        if(RESULT == true){
         const strarr = arr.map((item)=>item+="");
         this.data = strarr;
-        console.log(this.data)
-        console.log(typeof(this.data[1]))
-        console.log(this.data instanceof Array)
         let length = arr.length - 1;
         let value = this.value; // value为矩阵的行列数
-        console.log(value)
         let num;
         switch (value) {
-          case 4:
+          case "4":
+            num = 1;
+            break;
+          case "5":
+            num = 2;
+            break;
+          case "6":
             num = 4;
             break;
-          case 5:
-            num = 6;
-            break;
-          case 6:
+          case "7":
             num = 8;
             break;
-          case 7:
-            num = 12;
-            break;
-          case 8:
+          case "8":
             num = 16;
             break;
         }
         console.log(num)
+        console.log(typeof value)
         for (let i = 0; i < num; i++) {
           // 读取文件，写入表格
-          for (let p = 0; p < num; p++) {
+          for (let p = 0; p < 16; p++) {
             this.tableData[i][p] = arr[length];
             length--; // 问题:深浅拷贝，在createTable函数中共用了一个obj，使得数据相同，解决:JSON.parse(JSON.stringfy(obj))
           }
         }
         console.log(this.tableData)
         this.upfile = file.files[0].name;
+        }
+        else{
+          this.$message('plesse check your data');
+        }
       };
     },
     selectChange() {
-      this.confirm = false;
       this.createTable(this.value); // 根据输入值选择表格矩阵
       console.log(this.value)
     },
+    checkInput(input,arr){        //检查输入的m是否符合规范
+      const result = Math.pow(2,input);
+      const ARRMAX = Math.max.apply(null,arr);   //数组中的最大数
+      const ARRMIN = Math.min.apply(null,arr);   //数组中的最小数
+      let result1 = ()=>{
+        return ARRMAX<=result&&ARRMIN>=0;
+      }
+      let result2 = ()=>{
+        return arr.every((item,index)=>{
+          return typeof Number(item) == "number" && Number(item)%1 ===0;   //数组中都为整数返回true
+        })
+      }
+      result2();
+      console.log("result1,result2:",result1(),result2())  //数据填满且符合规则，大于0，小于最大值都为整数
+      if(result1()&&result2()&&arr.length==result){
+        return true;
+      }
+      else{
+        return false;
+      }
+    },
     selectChange2() {
-      this.confirm = false;
       this.createTable2(this.value2); // 根据输出值选择表格矩阵
     },
     calcute(){
-      if(this.confirm === false){
-        this.$message({
-          message: 'please ensure m n',
-          type: 'warning'
-        });
-      }
-      else
-      {
       axios.post(`http://111.230.197.120:8080/verify?data=${this.data}&inResult=${this.value}&outResult=${this.value2}&email=${this.email}`)
       .then((res)=>{
         console.log(res)
@@ -329,7 +326,6 @@ export default {
       .error((e)=>{
         console.log(e);
       })
-      }
     },
     createTable(num) {
       let obj = {};
@@ -338,16 +334,16 @@ export default {
         num // 根据S盒原理选择byte对应的矩阵，构造数据
       ) {
         case "4":
-          length = 4;
+          length = 1;
           break;
         case "5":
-          length = 6;
+          length = 2;
           break;
         case "6":
-          length = 8;
+          length = 4;
           break;
           case "7":
-          length = 12;
+          length = 8;
           break;
         case "8":
           length = 16;
@@ -370,16 +366,16 @@ export default {
         num // 根据S盒原理选择byte对应的矩阵，构造数据
       ) {
         case "4":
-          length = 4;
+          length = 1;
           break;
         case "5":
-          length = 6;
+          length = 2;
           break;
         case "6":
-          length = 8;
+          length = 4;
           break;
           case "7":
-          length = 12;
+          length = 8;
           break;
         case "8":
           length = 16;
@@ -454,12 +450,16 @@ export default {
   text-decoration: none;
 }
 .upfile {
-  float: left;
-  margin-top: 5px;
-}
-.selectn {
   display: inline-block;
-  margin-left: 100px;
+  margin-left: 200px;
+}
+.select-in {
+  display: inline-block;
+  float:left;
+}
+.select-out{
+  display: inline-block;
+  margin-left: 200px;
 }
 .confirm {
   display: inline-block;
